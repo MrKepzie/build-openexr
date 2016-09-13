@@ -67,6 +67,11 @@ fi
 
 if [ "$USE_XCODE" = "1" ]; then
     GENERATOR_TYPE="-G Xcode"
+else
+    if [ "$OS" == "MINGW64_NT-6.1" ]; then
+        GENERATOR_TYPE="-G MSYS Makefiles"
+    fi
+
 fi
 
 if [ ! -d "openexr-git" ]; then
@@ -123,14 +128,14 @@ fi
 	
     mkdir build_ilmbase
 	cd build_ilmbase
-	cmake -G"MSYS Makefiles" -DCMAKE_INSTALL_PREFIX=$DST_DIR -DBUILD_SHARED_LIBS=ON -DNAMESPACE_VERSIONING=ON ${CMAKE_CONFIG} ../IlmBase || exit 1
+	cmake $GENERATOR_TYPE -DCMAKE_INSTALL_PREFIX=$DST_DIR -DBUILD_SHARED_LIBS=ON -DNAMESPACE_VERSIONING=ON ${CMAKE_CONFIG} ../IlmBase || exit 1
 	make -j${MKJOBS} || exit 1
     make install || exit 1
 	cd ..
 	mkdir build_openexr
 	cd build_openexr
 	
-	cmake -DCMAKE_CXX_FLAGS="-I${DST_DIR}/include/OpenEXR" -DCMAKE_EXE_LINKER_FLAGS="-L${DST_DIR}/bin" -G"MSYS Makefiles" -DCMAKE_INSTALL_PREFIX=$DST_DIR -DBUILD_SHARED_LIBS=ON -DNAMESPACE_VERSIONING=ON -DUSE_ZLIB_WINAPI=OFF ${CMAKE_CONFIG} ../OpenEXR || exit 1
+	cmake $GENERATOR_TYPE -DILMBASE_PACKAGE_PREFIX="${DST_DIR}" -DCMAKE_CXX_FLAGS="-I${DST_DIR}/include/OpenEXR" -DCMAKE_EXE_LINKER_FLAGS="-L${DST_DIR}/bin"  -DCMAKE_INSTALL_PREFIX=$DST_DIR -DBUILD_SHARED_LIBS=ON -DNAMESPACE_VERSIONING=ON -DUSE_ZLIB_WINAPI=OFF ${CMAKE_CONFIG} ../OpenEXR || exit 1
 
     make -j${MKJOBS} || exit 1
     make install || exit 1
